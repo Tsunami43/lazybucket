@@ -309,6 +309,11 @@ body {
   word-break: break-all;
 }
 
+.bucket-date {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
 .bucket-actions {
   display: flex;
   gap: 6px;

@@ -8,6 +8,7 @@ pub struct Object {
     pub content_type: Option<String>,
     pub etag: String,
     pub storage_path: String,
+    pub created_at: String,
 }
 
 pub async fn create_object(pool: &SqlitePool, obj: &Object) -> anyhow::Result<()> {
@@ -32,7 +33,7 @@ pub async fn get_object(
     key: &str,
 ) -> anyhow::Result<Option<Object>> {
     let row = sqlx::query_as::<_, Object>(
-        "SELECT bucket, key, size, content_type, etag, storage_path
+        "SELECT bucket, key, size, content_type, etag, storage_path, created_at
          FROM objects WHERE bucket = ? AND key = ?",
     )
     .bind(bucket)
@@ -77,7 +78,7 @@ pub async fn list_objects(
         Some(p) => {
             let pattern = format!("{}%", p);
             sqlx::query_as::<_, Object>(
-                "SELECT bucket, key, size, content_type, etag, storage_path
+                "SELECT bucket, key, size, content_type, etag, storage_path, created_at
                  FROM objects WHERE bucket = ? AND key LIKE ?
                  ORDER BY key",
             )
@@ -88,7 +89,7 @@ pub async fn list_objects(
         }
         None => {
             sqlx::query_as::<_, Object>(
-                "SELECT bucket, key, size, content_type, etag, storage_path
+                "SELECT bucket, key, size, content_type, etag, storage_path, created_at
                  FROM objects WHERE bucket = ?
                  ORDER BY key",
             )
@@ -121,6 +122,7 @@ mod test {
             content_type: Some("text/plain".to_string()),
             etag: "abc123".to_string(),
             storage_path: format!("test-bucket/{}", key),
+            created_at: "2024-01-01 00:00:00".to_string(),
         }
     }
 

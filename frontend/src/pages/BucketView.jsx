@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { listObjects, uploadObject, deleteObject, renameObject, downloadUrl, logout } from '../api'
+import { Archive, Folder, Upload, Download, Eye, Pencil, Trash2, LogOut } from 'lucide-react'
+import { listObjects, uploadObject, deleteObject, renameObject, downloadUrl, downloadObject, logout } from '../api'
 
 function formatSize(bytes) {
   if (bytes === 0) return '—'
@@ -67,10 +68,11 @@ export default function BucketView() {
     <div className="layout">
       <nav className="navbar">
         <div className="navbar-brand">
-          <span>🪣</span>
+          <Archive size={22} strokeWidth={1.5} />
           <span>LazyBucket</span>
         </div>
         <button className="btn btn-ghost" onClick={() => { logout(); navigate('/login') }}>
+          <LogOut size={16} />
           Sign out
         </button>
       </nav>
@@ -81,7 +83,10 @@ export default function BucketView() {
         </button>
 
         <div className="page-header">
-          <h1 className="page-title">🪣 {name}</h1>
+          <h1 className="page-title">
+            <Folder size={24} strokeWidth={1.5} />
+            <span style={{ marginLeft: 8 }}>{name}</span>
+          </h1>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <input
               type="text"
@@ -102,7 +107,7 @@ export default function BucketView() {
               onClick={() => fileInput.current.click()}
               disabled={uploading}
             >
-              {uploading ? <span className="spinner" /> : '↑ Upload'}
+              {uploading ? <span className="spinner" /> : <><Upload size={15} /> Upload</>}
             </button>
             <input
               ref={fileInput}
@@ -118,7 +123,7 @@ export default function BucketView() {
           <div className="empty"><p>Loading…</p></div>
         ) : objects.length === 0 ? (
           <div className="empty">
-            <div style={{ fontSize: 48 }}>📂</div>
+            <Folder size={48} strokeWidth={1} />
             <p>No files yet. Upload something.</p>
           </div>
         ) : (
@@ -129,6 +134,7 @@ export default function BucketView() {
                   <th>Name</th>
                   <th>Size</th>
                   <th>Type</th>
+                  <th>Created</th>
                   <th>ETag</th>
                   <th></th>
                 </tr>
@@ -143,6 +149,9 @@ export default function BucketView() {
                         ? <span className="badge">{obj.content_type.split('/')[1] ?? obj.content_type}</span>
                         : '—'}
                     </td>
+                    <td style={{ fontSize: 12, color: '#6b7280', whiteSpace: 'nowrap' }}>
+                      {obj.created_at ? new Date(obj.created_at.replace(' ', 'T')).toLocaleDateString('ru-RU') : '—'}
+                    </td>
                     <td style={{ fontFamily: 'monospace', fontSize: 11, color: '#9ca3af' }}>
                       {obj.etag.slice(0, 12)}…
                     </td>
@@ -150,25 +159,33 @@ export default function BucketView() {
                       <div className="td-actions">
                         <a
                           href={downloadUrl(name, obj.key)}
-                          download
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn-icon"
+                          title="Preview"
+                        >
+                          <Eye size={15} />
+                        </a>
+                        <button
                           className="btn-icon"
                           title="Download"
+                          onClick={() => downloadObject(name, obj.key)}
                         >
-                          ⬇
-                        </a>
+                          <Download size={15} />
+                        </button>
                         <button
                           className="btn-icon"
                           title="Rename"
                           onClick={() => { setRenaming(obj); setRenameTo(obj.key) }}
                         >
-                          ✏️
+                          <Pencil size={15} />
                         </button>
                         <button
                           className="btn-icon danger"
                           title="Delete"
                           onClick={() => handleDelete(obj.key)}
                         >
-                          🗑
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </td>

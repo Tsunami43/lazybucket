@@ -36,6 +36,7 @@ pub async fn upload_object(
         content_type,
         etag,
         storage_path: format!("{}/{}", bucket, key),
+        created_at: String::new(),
     };
 
     db::objects::create_object(&state.pool, &obj)
@@ -133,6 +134,7 @@ pub struct ObjectInfo {
     pub size: i64,
     pub content_type: Option<String>,
     pub etag: String,
+    pub created_at: String,
 }
 
 pub async fn list_objects(
@@ -151,6 +153,7 @@ pub async fn list_objects(
             size: o.size,
             content_type: o.content_type,
             etag: o.etag,
+            created_at: o.created_at,
         })
         .collect();
 

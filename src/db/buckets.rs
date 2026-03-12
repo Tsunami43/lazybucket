@@ -6,8 +6,14 @@ pub async fn create_bucket(pool: &sqlx::SqlitePool, name: &str) -> anyhow::Resul
     Ok(())
 }
 
-pub async fn list_buckets(pool: &sqlx::SqlitePool) -> anyhow::Result<Vec<String>> {
-    let rows = sqlx::query_scalar::<_, String>("SELECT name FROM buckets ORDER BY created_at")
+#[derive(sqlx::FromRow)]
+pub struct Bucket {
+    pub name: String,
+    pub created_at: String,
+}
+
+pub async fn list_buckets(pool: &sqlx::SqlitePool) -> anyhow::Result<Vec<Bucket>> {
+    let rows = sqlx::query_as::<_, Bucket>("SELECT name, created_at FROM buckets ORDER BY created_at")
         .fetch_all(pool)
         .await?;
     Ok(rows)
@@ -57,7 +63,8 @@ mod test {
         db::buckets::create_bucket(&pool, "beta").await.unwrap();
 
         let list = db::buckets::list_buckets(&pool).await.unwrap();
-        assert_eq!(list, vec!["alpha", "beta"]);
+        let names: Vec<_> = list.iter().map(|b| b.name.as_str()).collect();
+        assert_eq!(names, vec!["alpha", "beta"]);
     }
 
     #[tokio::test]
@@ -71,7 +78,8 @@ mod test {
         assert!(renamed);
 
         let list = db::buckets::list_buckets(&pool).await.unwrap();
-        assert_eq!(list, vec!["new"]);
+        let names: Vec<_> = list.iter().map(|b| b.name.as_str()).collect();
+        assert_eq!(names, vec!["new"]);
 
         // Несуществующий бакет
         let not_found = db::buckets::rename_bucket(&pool, "old", "other")

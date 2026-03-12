@@ -43,3 +43,15 @@ export const renameObject = (bucket, key, newKey) =>
   req('PATCH', `/${encodeURIComponent(bucket)}/${key}`, JSON.stringify({ key: newKey }), 'application/json')
 export const downloadUrl = (bucket, key) =>
   `${BASE}/${encodeURIComponent(bucket)}/${key}`
+
+export const downloadObject = async (bucket, key) => {
+  const res = await req('GET', `/${encodeURIComponent(bucket)}/${key}`)
+  if (!res.ok) return
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = key.split('/').pop()
+  a.click()
+  URL.revokeObjectURL(url)
+}

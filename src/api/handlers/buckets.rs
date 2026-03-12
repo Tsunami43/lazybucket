@@ -3,7 +3,7 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{AppState, db};
 
@@ -28,9 +28,18 @@ pub async fn create_bucket(
     }
 }
 
-pub async fn list_buckets(State(state): State<AppState>) -> Result<Json<Vec<String>>, StatusCode> {
+#[derive(Serialize)]
+pub struct BucketInfo {
+    pub name: String,
+    pub created_at: String,
+}
+
+pub async fn list_buckets(State(state): State<AppState>) -> Result<Json<Vec<BucketInfo>>, StatusCode> {
     match db::buckets::list_buckets(&state.pool).await {
-        Ok(buckets) => Ok(Json(buckets)),
+        Ok(buckets) => Ok(Json(buckets.into_iter().map(|b| BucketInfo {
+            name: b.name,
+            created_at: b.created_at,
+        }).collect())),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }

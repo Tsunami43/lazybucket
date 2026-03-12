@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Archive, Folder, Plus, Pencil, Trash2, LogOut } from 'lucide-react'
 import { listBuckets, createBucket, deleteBucket, renameBucket, logout } from '../api'
 
 export default function Buckets() {
@@ -16,6 +17,7 @@ export default function Buckets() {
   const load = async () => {
     const res = await listBuckets()
     if (res.ok) setBuckets(await res.json())
+    else setBuckets([])
     setLoading(false)
   }
 
@@ -59,10 +61,11 @@ export default function Buckets() {
     <div className="layout">
       <nav className="navbar">
         <div className="navbar-brand">
-          <span>🪣</span>
+          <Archive size={22} strokeWidth={1.5} />
           <span>LazyBucket</span>
         </div>
         <button className="btn btn-ghost" onClick={() => { logout(); navigate('/login') }}>
+          <LogOut size={16} />
           Sign out
         </button>
       </nav>
@@ -71,7 +74,8 @@ export default function Buckets() {
         <div className="page-header">
           <h1 className="page-title">Buckets</h1>
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-            + New bucket
+            <Plus size={16} />
+            New bucket
           </button>
         </div>
 
@@ -79,28 +83,33 @@ export default function Buckets() {
           <div className="empty"><p>Loading…</p></div>
         ) : buckets.length === 0 ? (
           <div className="empty">
-            <div style={{ fontSize: 48 }}>🪣</div>
+            <Archive size={48} strokeWidth={1} />
             <p>No buckets yet. Create your first one.</p>
           </div>
         ) : (
           <div className="buckets-grid">
-            {buckets.map(name => (
-              <div key={name} className="bucket-card" onClick={() => navigate(`/buckets/${name}`)}>
-                <div className="bucket-icon">🪣</div>
-                <div className="bucket-name">{name}</div>
+            {buckets.map(b => (
+              <div key={b.name} className="bucket-card" onClick={() => navigate(`/buckets/${b.name}`)}>
+                <div className="bucket-icon"><Folder size={32} strokeWidth={1.5} /></div>
+                <div className="bucket-name">{b.name}</div>
+                <div className="bucket-date">
+                  {b.created_at ? new Date(b.created_at.replace(' ', 'T')).toLocaleDateString('ru-RU') : '—'}
+                </div>
                 <div className="bucket-actions" onClick={e => e.stopPropagation()}>
                   <button
                     className="btn btn-secondary"
                     style={{ fontSize: 12, padding: '4px 10px' }}
-                    onClick={() => { setRenaming(name); setRenameTo(name) }}
+                    onClick={() => { setRenaming(b.name); setRenameTo(b.name) }}
                   >
+                    <Pencil size={13} />
                     Rename
                   </button>
                   <button
                     className="btn btn-danger"
                     style={{ fontSize: 12, padding: '4px 10px' }}
-                    onClick={() => handleDelete(name)}
+                    onClick={() => handleDelete(b.name)}
                   >
+                    <Trash2 size={13} />
                     Delete
                   </button>
                 </div>

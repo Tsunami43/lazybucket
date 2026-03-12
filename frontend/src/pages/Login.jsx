@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Archive } from 'lucide-react'
 import { login } from '../api'
 
 export default function Login() {
@@ -25,7 +26,7 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          <div style={{ fontSize: 52 }}>🪣</div>
+          <Archive size={52} strokeWidth={1.5} />
           <h1>LazyBucket</h1>
           <p>Simple file storage</p>
         </div>
