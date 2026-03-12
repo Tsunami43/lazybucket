@@ -1,4 +1,5 @@
 pub mod buckets;
+pub mod objects;
 
 use sqlx::SqlitePool;
 
