@@ -1,13 +1,16 @@
 mod api;
 mod config;
 mod db;
+mod storage;
 
 use axum::{
     Router, middleware,
     routing::{delete, get, patch, put},
 };
-use config::{Config, DATABASE_URL, PORT};
+use config::{Config, DATABASE_URL, PORT, STORAGE_PATH};
 use sqlx::SqlitePool;
+use std::sync::Arc;
+use storage::local::LocalStorage;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -15,6 +18,7 @@ use tracing_subscriber::FmtSubscriber;
 pub struct AppState {
     pub pool: SqlitePool,
     pub config: Config,
+    pub storage: Arc<LocalStorage>,
 }
 
 #[tokio::main]
@@ -36,7 +40,11 @@ async fn main() {
     let pool = db::init_pool(DATABASE_URL).await.unwrap();
 
     // AppState
-    let state = AppState { pool, config: cfg };
+    let state = AppState {
+        pool,
+        config: cfg,
+        storage: Arc::new(LocalStorage::new(STORAGE_PATH)),
+    };
 
     // App
     let protected = Router::new()
