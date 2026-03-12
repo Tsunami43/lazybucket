@@ -4,7 +4,7 @@ mod db;
 
 use axum::{
     Router, middleware,
-    routing::{get, put},
+    routing::{delete, get, patch, put},
 };
 use config::{Config, DATABASE_URL, PORT};
 use sqlx::SqlitePool;
@@ -40,7 +40,10 @@ async fn main() {
 
     // App
     let protected = Router::new()
+        .route("/buckets", get(api::handlers::buckets::list_buckets))
         .route("/buckets/:name", put(api::handlers::buckets::create_bucket))
+        .route("/buckets/:name", delete(api::handlers::buckets::delete_bucket))
+        .route("/buckets/:name", patch(api::handlers::buckets::rename_bucket))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             api::middlewares::auth,
