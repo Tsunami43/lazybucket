@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use tokio::fs;
+use tokio_util::io::ReaderStream;
 
 pub struct LocalStorage {
     pub base_path: PathBuf,
@@ -29,6 +30,12 @@ impl LocalStorage {
         let path = self.object_path(bucket, key);
         let data = fs::read(&path).await?;
         Ok(data)
+    }
+
+    pub async fn read_stream(&self, bucket: &str, key: &str) -> anyhow::Result<ReaderStream<fs::File>> {
+        let path = self.object_path(bucket, key);
+        let file = fs::File::open(&path).await?;
+        Ok(ReaderStream::new(file))
     }
 
     pub async fn delete(&self, bucket: &str, key: &str) -> anyhow::Result<()> {

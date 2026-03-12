@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    body::Bytes,
+    body::{Body, Bytes},
     extract::{Path, Query, State},
     http::{StatusCode, header},
     response::{IntoResponse, Response},
@@ -55,9 +55,9 @@ pub async fn download_object(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .ok_or(StatusCode::NOT_FOUND)?;
 
-    let data = state
+    let stream = state
         .storage
-        .read(&bucket, &key)
+        .read_stream(&bucket, &key)
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
 
@@ -65,7 +65,11 @@ pub async fn download_object(
         .content_type
         .unwrap_or_else(|| "application/octet-stream".to_string());
 
-    Ok(([(header::CONTENT_TYPE, content_type)], data).into_response())
+    Ok((
+        [(header::CONTENT_TYPE, content_type)],
+        Body::from_stream(stream),
+    )
+        .into_response())
 }
 
 pub async fn delete_object(
