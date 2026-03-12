@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS buckets (
+    name TEXT PRIMARY KEY,
+    created_at DATETIME NOT NULL DEFAULT
+CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS objects (
+    bucket TEXT NOT NULL,
+    key TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    content_type TEXT,
+    etag TEXT NOT NULL,
+    storage_path TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (bucket, key),
+    FOREIGN KEY (bucket) REFERENCES buckets(name)
+);

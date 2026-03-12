@@ -1,8 +1,12 @@
-mod config;
-use config::Config;
+mod db;
+// mod config;
+// use config::Config;
 
-fn main() {
-    let cfg = Config::from_env();
+#[tokio::main]
+async fn main() {
+    // let cfg = Config::from_env();
 
-    println!("Hello, world! {}, {}", cfg.login, cfg.password);
+    let _pool = db::init_pool("sqlite://database.db?mode=rwc")
+        .await
+        .unwrap();
 }
