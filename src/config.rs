@@ -1,0 +1,33 @@
+use std::env;
+
+#[derive(Debug)]
+pub struct Config {
+    pub login: String,
+    pub password: String,
+}
+
+impl Config {
+    pub fn from_env() -> Self {
+        let login = env::var("USER_LOGIN").expect("USER_LOGIN must be set");
+        let password = env::var("USER_PASSWORD").expect("USER_PASSWORD must be set");
+
+        Config { login, password }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::env;
+
+    #[test]
+    fn test_config_loads() {
+        unsafe {
+            env::set_var("USER_LOGIN", "testuser");
+            env::set_var("USER_PASSWORD", "testpass");
+        }
+
+        let cfg = super::Config::from_env();
+        assert_eq!(cfg.login, "testuser");
+        assert_eq!(cfg.password, "testpass");
+    }
+}
