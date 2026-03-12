@@ -1,13 +1,16 @@
-use axum::extract::{Path, State};
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+};
 
 use crate::{AppState, db};
 
 pub async fn create_bucket(
     State(state): State<AppState>,
     Path(name): Path<String>,
-) -> &'static str {
-    db::buckets::create_bucket(&state.pool, &name)
-        .await
-        .unwrap();
-    "ok"
+) -> Result<StatusCode, StatusCode> {
+    match db::buckets::create_bucket(&state.pool, &name).await {
+        Ok(_) => Ok(StatusCode::CREATED),
+        Err(_) => Err(StatusCode::CONFLICT),
+    }
 }
