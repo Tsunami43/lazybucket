@@ -52,6 +52,10 @@ async fn main() {
         .route("/buckets/:name", put(api::handlers::buckets::create_bucket))
         .route("/buckets/:name", delete(api::handlers::buckets::delete_bucket))
         .route("/buckets/:name", patch(api::handlers::buckets::rename_bucket))
+        .route("/:bucket", get(api::handlers::objects::list_objects))
+        .route("/:bucket/*key", put(api::handlers::objects::upload_object))
+        .route("/:bucket/*key", delete(api::handlers::objects::delete_object))
+        .route("/:bucket/*key", patch(api::handlers::objects::rename_object))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             api::middlewares::auth,
@@ -59,6 +63,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/health", get(api::handlers::health::health))
+        .route("/:bucket/*key", get(api::handlers::objects::download_object))
         .merge(protected)
         .with_state(state);
 

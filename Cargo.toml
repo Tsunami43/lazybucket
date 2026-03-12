@@ -7,6 +7,8 @@ edition = "2024"
 anyhow = "1.0.102"
 axum = "=0.7.3"
 serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+hex = "0.4"
 dotenv = "0.15.0"
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "migrate"] }
 tokio = { version = "1.50.0", features = ["full"] }
