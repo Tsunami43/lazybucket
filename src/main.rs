@@ -7,6 +7,7 @@ use axum::{
     Router, middleware,
     routing::{delete, get, patch, put},
 };
+use tower_http::cors::CorsLayer;
 use config::{Config, DATABASE_URL, PORT, STORAGE_PATH};
 use sqlx::SqlitePool;
 use std::sync::Arc;
@@ -65,6 +66,7 @@ async fn main() {
         .route("/health", get(api::handlers::health::health))
         .route("/:bucket/*key", get(api::handlers::objects::download_object))
         .merge(protected)
+        .layer(CorsLayer::permissive())
         .with_state(state);
 
     // Server
