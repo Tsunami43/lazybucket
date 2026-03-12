@@ -1,4 +1,5 @@
-use anyhow;
+pub mod buckets;
+
 use sqlx::SqlitePool;
 
 pub async fn init_pool(database_url: &str) -> anyhow::Result<SqlitePool> {

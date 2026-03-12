@@ -1,6 +1,12 @@
+mod api;
 mod config;
 mod db;
-use axum::{Router, extract::State, routing::get};
+
+use axum::{
+    Router,
+    extract::State,
+    routing::{get, put},
+};
 use config::Config;
 use sqlx::SqlitePool;
 
@@ -21,11 +27,11 @@ async fn main() {
     let pool = db::init_pool("sqlite://database.db?mode=rwc")
         .await
         .unwrap();
-
     let state = AppState { pool, config: cfg };
 
     let app = Router::new()
         .route("/health", get(health))
+        .route("/buckets/:name", put(api::buckets::create_bucket))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
