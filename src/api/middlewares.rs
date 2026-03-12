@@ -16,6 +16,7 @@ pub async fn auth(
 
     // 401
     let Some(value) = auth_header else {
+        tracing::warn!("Request without Authorization header");
         return Err(StatusCode::UNAUTHORIZED);
     };
 
@@ -28,6 +29,7 @@ pub async fn auth(
     let (login, password) = (parts[0], parts[1]);
 
     if login != state.config.login || password != state.config.password {
+        tracing::warn!("Invalid credentials for login: {}", login);
         return Err(StatusCode::UNAUTHORIZED);
     }
 

@@ -7,6 +7,8 @@ pub struct Config {
     pub password: String,
 }
 
+pub const PORT: u16 = 8000;
+
 impl Config {
     pub fn from_env() -> Self {
         dotenv().ok();

@@ -10,7 +10,13 @@ pub async fn create_bucket(
     Path(name): Path<String>,
 ) -> Result<StatusCode, StatusCode> {
     match db::buckets::create_bucket(&state.pool, &name).await {
-        Ok(_) => Ok(StatusCode::CREATED),
-        Err(_) => Err(StatusCode::CONFLICT),
+        Ok(_) => {
+            tracing::info!("Bucket created: {}", name);
+            Ok(StatusCode::CREATED)
+        }
+        Err(_) => {
+            tracing::warn!("Bucket already exists: {}", name);
+            Err(StatusCode::CONFLICT)
+        }
     }
 }
