@@ -19,6 +19,7 @@ export default function BucketView() {
   const [uploading, setUploading] = useState(false)
   const [renaming, setRenaming] = useState(null)
   const [renameTo, setRenameTo] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
   const fileInput = useRef(null)
 
   const load = async () => {
@@ -43,9 +44,13 @@ export default function BucketView() {
     load()
   }
 
-  const handleDelete = async (key) => {
-    if (!confirm(`Delete "${key}"?`)) return
-    await deleteObject(name, key)
+  const handleDelete = (key) => {
+    setConfirmDelete(key)
+  }
+
+  const confirmDeleteObject = async () => {
+    await deleteObject(name, confirmDelete)
+    setConfirmDelete(null)
     load()
   }
 
@@ -174,6 +179,19 @@ export default function BucketView() {
           </div>
         )}
       </main>
+
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Delete file</h2>
+            <p>Are you sure you want to delete <strong>"{confirmDelete}"</strong>?</p>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmDelete(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={confirmDeleteObject}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {renaming && (
         <div className="modal-overlay" onClick={() => setRenaming(null)}>

@@ -10,6 +10,8 @@ export default function Buckets() {
   const [newName, setNewName] = useState('')
   const [renaming, setRenaming] = useState(null)
   const [renameTo, setRenameTo] = useState('')
+  const [errorMsg, setErrorMsg] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const load = async () => {
     const res = await listBuckets()
@@ -22,15 +24,25 @@ export default function Buckets() {
   const handleCreate = async (e) => {
     e.preventDefault()
     if (!newName.trim()) return
-    await createBucket(newName.trim())
+    const res = await createBucket(newName.trim())
+    if (res.status === 409) {
+      setShowCreate(false)
+      setErrorMsg(`Bucket "${newName.trim()}" already exists.`)
+      setNewName('')
+      return
+    }
     setNewName('')
     setShowCreate(false)
     load()
   }
 
-  const handleDelete = async (name) => {
-    if (!confirm(`Delete bucket "${name}"?`)) return
-    await deleteBucket(name)
+  const handleDelete = (name) => {
+    setConfirmDelete(name)
+  }
+
+  const confirmDeleteBucket = async () => {
+    await deleteBucket(confirmDelete)
+    setConfirmDelete(null)
     load()
   }
 
@@ -118,6 +130,31 @@ export default function Buckets() {
                 <button type="submit" className="btn btn-primary">Create</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Delete bucket</h2>
+            <p>Are you sure you want to delete <strong>"{confirmDelete}"</strong>?</p>
+            <div className="modal-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmDelete(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={confirmDeleteBucket}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {errorMsg && (
+        <div className="modal-overlay" onClick={() => setErrorMsg(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Error</h2>
+            <p>{errorMsg}</p>
+            <div className="modal-actions">
+              <button className="btn btn-primary" onClick={() => setErrorMsg(null)}>OK</button>
+            </div>
           </div>
         </div>
       )}
