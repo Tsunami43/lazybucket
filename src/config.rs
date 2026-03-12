@@ -9,6 +9,8 @@ pub struct Config {
 
 pub const PORT: u16 = 8000;
 
+pub const DATABASE_URL: &str = "sqlite://database.db?mode=rwc";
+
 impl Config {
     pub fn from_env() -> Self {
         dotenv().ok();

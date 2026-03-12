@@ -1,2 +1,2 @@
-pub mod buckets;
+pub mod handlers;
 pub mod middlewares;
