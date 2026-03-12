@@ -39,13 +39,16 @@ async fn main() {
     let state = AppState { pool, config: cfg };
 
     // App
-    let app = Router::new()
-        .route("/health", get(api::handlers::health::health))
+    let protected = Router::new()
         .route("/buckets/:name", put(api::handlers::buckets::create_bucket))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             api::middlewares::auth,
-        ))
+        ));
+
+    let app = Router::new()
+        .route("/health", get(api::handlers::health::health))
+        .merge(protected)
         .with_state(state);
 
     // Server
