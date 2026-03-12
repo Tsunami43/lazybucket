@@ -7,11 +7,12 @@ use axum::{
     Router, middleware,
     routing::{delete, get, patch, put},
 };
-use tower_http::cors::CorsLayer;
-use config::{Config, DATABASE_URL, PORT, STORAGE_PATH};
+use config::{Config, PORT, DATABASE_URL, STORAGE_PATH};
 use sqlx::SqlitePool;
 use std::sync::Arc;
 use storage::local::LocalStorage;
+use tower_http::cors::CorsLayer;
+use tower_http::services::{ServeDir, ServeFile};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -24,30 +25,22 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    // Logger
     let subscriber = FmtSubscriber::builder()
-        // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
-        // will be written to stdout.
         .with_max_level(Level::INFO)
-        // completes the builder.
         .finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("Setting default subscriber failed");
 
-    // Config
     let cfg = Config::from_env();
 
-    // DB pool
     let pool = db::init_pool(DATABASE_URL).await.unwrap();
 
-    // AppState
     let state = AppState {
         pool,
         config: cfg,
         storage: Arc::new(LocalStorage::new(STORAGE_PATH)),
     };
 
-    // App
     let protected = Router::new()
         .route("/buckets", get(api::handlers::buckets::list_buckets))
         .route("/buckets/:name", put(api::handlers::buckets::create_bucket))
@@ -62,14 +55,17 @@ async fn main() {
             api::middlewares::auth,
         ));
 
-    let app = Router::new()
-        .route("/health", get(api::handlers::health::health))
-        .route("/:bucket/*key", get(api::handlers::objects::download_object))
-        .merge(protected)
-        .layer(CorsLayer::permissive())
-        .with_state(state);
+    let spa = ServeDir::new("./frontend/dist")
+        .fallback(ServeFile::new("./frontend/dist/index.html"));
 
-    // Server
+    let app = Router::new()
+        .route("/api/health", get(api::handlers::health::health))
+        .route("/api/:bucket/*key", get(api::handlers::objects::download_object))
+        .nest("/api", protected)
+        .layer(CorsLayer::permissive())
+        .with_state(state)
+        .fallback_service(spa);
+
     let addr = format!("0.0.0.0:{}", PORT);
     let listener = tokio::net::TcpListener::bind(addr.clone()).await.unwrap();
 
