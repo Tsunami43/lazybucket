@@ -1,6 +1,7 @@
+use dotenv::dotenv;
 use std::env;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub login: String,
     pub password: String,
@@ -8,6 +9,8 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> Self {
+        dotenv().ok();
+
         let login = env::var("USER_LOGIN").expect("USER_LOGIN must be set");
         let password = env::var("USER_PASSWORD").expect("USER_PASSWORD must be set");
 
