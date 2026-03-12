@@ -5,6 +5,7 @@ mod db;
 use axum::{
     Router,
     extract::State,
+    middleware,
     routing::{get, put},
 };
 use config::Config;
@@ -32,6 +33,10 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(health))
         .route("/buckets/:name", put(api::buckets::create_bucket))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            api::middlewares::auth,
+        ))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
